@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+```
+
+Đặt file này vào **cả 2 thư mục**:
+```
+cms-layer/.gitignore
+cms-microkernel/.gitignore

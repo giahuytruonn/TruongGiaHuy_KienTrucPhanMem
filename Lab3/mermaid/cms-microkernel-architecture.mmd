@@ -1,0 +1,25 @@
+flowchart TD
+    Client[Client / Dashboard] --> Routes[Express Routes]
+    Routes --> Core[CMS Core]
+
+    Core --> PluginRegistry[Plugin Registry]
+    Core --> HookRegistry[Hook Registry]
+    Core --> DBAccess[Shared DB Access]
+
+    PluginRegistry --> ContentPlugin[Content Management Plugin]
+    PluginRegistry --> HookPlugin[Hook System Plugin]
+    PluginRegistry --> LifecyclePlugin[Lifecycle Plugin]
+
+    ContentPlugin --> ContentOps[Content Type + Content CRUD]
+    HookPlugin --> HookOps[Hook Register / Remove / Fire]
+    LifecyclePlugin --> LifecycleOps[Install / Activate / Deactivate / Uninstall]
+
+    Core --> BeforeSave[before_save]
+    Core --> AfterSave[after_save]
+    Core --> AfterPublish[after_publish]
+    Core --> RegisterType[after_register_content_type]
+
+    DBAccess --> DB[(MariaDB Database)]
+    ContentPlugin --> DB
+    HookPlugin --> DB
+    LifecyclePlugin --> DB

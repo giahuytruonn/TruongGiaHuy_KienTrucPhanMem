@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2026;
+    --border: #2a2d35;
+    --accent: #6ee7b7;
+    --accent2: #818cf8;
+    --accent3: #fb923c;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --danger: #f87171;
+    --success: #6ee7b7;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+  .logo span { color: var(--muted); display: block; font-size: 10px; margin-top: 3px; }
+
+  .arch-toggle {
+    display: flex;
+    margin: 16px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .arch-btn {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .arch-btn.active {
+    background: var(--accent);
+    color: #0e0f11;
+    font-weight: 700;
+  }
+
+  .nav-section {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--muted);
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    font-weight: 400;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(110,231,183,0.06);
+  }
+  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .port-badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+  }
+  .topbar h1 { font-size: 15px; font-weight: 500; }
+  .topbar .breadcrumb { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .topbar .breadcrumb span { color: var(--accent); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    margin-left: auto;
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  .content {
+    flex: 1;
+    padding: 28px;
+    overflow-y: auto;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.c1::before { background: var(--accent); }
+  .stat-card.c2::before { background: var(--accent2); }
+  .stat-card.c3::before { background: var(--accent3); }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-value { font-size: 32px; font-family: var(--mono); font-weight: 700; margin: 6px 0 2px; }
+  .stat-value.c1 { color: var(--accent); }
+  .stat-value.c2 { color: var(--accent2); }
+  .stat-value.c3 { color: var(--accent3); }
+  .stat-sub { font-size: 12px; color: var(--muted); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--mono);
+    color: var(--text);
+  }
+
+  .btn {
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #0e0f11; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.25); }
+  .btn-danger:hover { background: rgba(248,113,113,0.2); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 11px 20px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 13px 20px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(42,45,53,0.5);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 700;
+  }
+  .badge-active { background: rgba(110,231,183,0.12); color: var(--accent); border: 1px solid rgba(110,231,183,0.2); }
+  .badge-inactive { background: rgba(107,114,128,0.12); color: var(--muted); border: 1px solid var(--border); }
+  .badge-installed { background: rgba(129,140,248,0.12); color: var(--accent2); border: 1px solid rgba(129,140,248,0.2); }
+  .badge-draft { background: rgba(251,146,60,0.12); color: var(--accent3); border: 1px solid rgba(251,146,60,0.2); }
+  .badge-published { background: rgba(110,231,183,0.12); color: var(--accent); border: 1px solid rgba(110,231,183,0.2); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 440px;
+    max-width: 95vw;
+  }
+  .modal h3 { font-size: 15px; margin-bottom: 20px; font-family: var(--mono); color: var(--accent); }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--accent);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-group select option { background: var(--surface2); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  .hook-flow {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+  .hook-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .hook-step:last-child { border-bottom: none; }
+  .hook-step.fired { color: var(--accent); }
+  .hook-step .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .hook-step.fired .dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .hook-step .arrow { color: var(--accent); opacity: 0.5; }
+
+  .arch-info {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .arch-info.microkernel { border-left-color: var(--accent2); }
+  .arch-info strong { color: var(--accent); font-family: var(--mono); font-size: 12px; }
+  .arch-info.microkernel strong { color: var(--accent2); }
+
+  .toast-container {
+    position: fixed;
+    top: 20px; right: 20px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    min-width: 240px;
+    animation: slideIn 0.2s ease;
+    font-family: var(--mono);
+  }
+  .toast.error { border-left-color: var(--danger); color: var(--danger); }
+  @keyframes slideIn { from { transform: translateX(40px); opacity:0; } to { transform: none; opacity:1; } }
+
+  .empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty .icon { font-size: 32px; margin-bottom: 10px; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    PluginCMS
+    <span>Admin Dashboard</span>
+  </div>
+
+  <div class="arch-toggle">
+    <button class="arch-btn active" onclick="setArch('layer')">LAYER</button>
+    <button class="arch-btn" onclick="setArch('microkernel')">MICRO</button>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" onclick="showPanel('dashboard')">
+    <span class="icon">◈</span> Dashboard
+  </div>
+
+  <div class="nav-section">Chức năng</div>
+  <div class="nav-item" onclick="showPanel('content-types')">
+    <span class="icon">◻</span> Content Types
+  </div>
+  <div class="nav-item" onclick="showPanel('contents')">
+    <span class="icon">◤</span> Contents
+  </div>
+  <div class="nav-item" onclick="showPanel('plugins')">
+    <span class="icon">◎</span> Plugins
+  </div>
+  <div class="nav-item" onclick="showPanel('hooks')">
+    <span class="icon">↺</span> Hook System
+  </div>
+
+  <div class="sidebar-footer">
+    <div id="arch-label">Layer Architecture</div>
+    <div id="port-badge" class="port-badge">:3000</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar h1" id="page-title" style="font-size:15px;font-weight:500">Dashboard</div>
+      <div class="breadcrumb">CMS / <span id="page-breadcrumb">Overview</span></div>
+    </div>
+    <div class="status-dot" style="margin-left:auto"></div>
+    <div class="status-label">connected</div>
+  </div>
+
+  <div class="content">
+
+    <div class="panel active" id="panel-dashboard">
+      <div id="arch-info-box" class="arch-info">
+        <strong>LAYER ARCHITECTURE</strong> — Request đi tuần tự qua từng tầng: Presentation → Business Logic → Data Access → Database. Response trả ngược lên.
+      </div>
+      <div class="stats-row">
+        <div class="stat-card c1">
+          <div class="stat-label">Content Types</div>
+          <div class="stat-value c1" id="stat-types">0</div>
+          <div class="stat-sub">loại đã đăng ký</div>
+        </div>
+        <div class="stat-card c2">
+          <div class="stat-label">Plugins</div>
+          <div class="stat-value c2" id="stat-plugins">0</div>
+          <div class="stat-sub">đang hoạt động</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-label">Hooks</div>
+          <div class="stat-value c3" id="stat-hooks">0</div>
+          <div class="stat-sub">đã đăng ký</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Contents</div>
+          <button class="btn btn-ghost btn-sm" onclick="showPanel('contents')">Xem tất cả →</button>
+        </div>
+        <table>
+          <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Created</th></tr></thead>
+          <tbody id="recent-contents-body">
+            <tr><td colspan="4"><div class="empty"><div>Chưa có content nào</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-content-types">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Content Types</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-type')">+ Thêm type</button>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Description</th><th>Created</th></tr></thead>
+          <tbody id="types-body">
+            <tr><td colspan="3"><div class="empty"><div class="icon">◻</div><div>Chưa có content type</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-contents">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Contents</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-content')">+ Tạo content</button>
+        </div>
+        <table>
+          <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Created</th><th></th></tr></thead>
+          <tbody id="contents-body">
+            <tr><td colspan="5"><div class="empty"><div class="icon">◤</div><div>Chưa có content</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-plugins">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Plugin Lifecycle</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-install-plugin')">+ Cài plugin</button>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Version</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="plugins-body">
+            <tr><td colspan="4"><div class="empty"><div class="icon">◎</div><div>Chưa có plugin</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-hooks">
+      <div class="hook-flow" id="hook-flow-box">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em">Hook Flow — Layer</div>
+        <div class="hook-step" id="hstep-request"><div class="dot"></div>Client gửi request → Presentation Layer</div>
+        <div class="hook-step" id="hstep-before"><div class="dot"></div><span class="arrow">→</span> Business Layer phát hook <strong>before_save</strong></div>
+        <div class="hook-step" id="hstep-plugin"><div class="dot"></div><span class="arrow">→</span> Plugin callback chạy</div>
+        <div class="hook-step" id="hstep-save"><div class="dot"></div><span class="arrow">→</span> Data Access Layer lưu DB</div>
+        <div class="hook-step" id="hstep-after"><div class="dot"></div><span class="arrow">→</span> Business Layer phát hook <strong>after_save</strong></div>
+        <div class="hook-step" id="hstep-response"><div class="dot"></div><span class="arrow">→</span> Response trả ngược lên Client</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-bottom:16px" onclick="animateHookFlow()">▶ Simulate hook flow</button>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Registered Hooks</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-hook')">+ Đăng ký hook</button>
+        </div>
+        <table>
+          <thead><tr><th>Event</th><th>Plugin</th><th>Callback Info</th><th></th></tr></thead>
+          <tbody id="hooks-body">
+            <tr><td colspan="4"><div class="empty"><div class="icon">↺</div><div>Chưa có hook nào</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-add-type">
+  <div class="modal">
+    <h3>+ Đăng ký Content Type</h3>
+    <div class="form-group"><label>Name</label><input id="type-name" placeholder="vd: blog, product, faq"></div>
+    <div class="form-group"><label>Description</label><textarea id="type-desc" placeholder="Mô tả content type này"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-type')">Huỷ</button>
+      <button class="btn btn-primary" onclick="addContentType()">Đăng ký</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-content">
+  <div class="modal">
+    <h3>+ Tạo Content mới</h3>
+    <div class="form-group"><label>Content Type</label><input id="content-type" placeholder="vd: blog"></div>
+    <div class="form-group"><label>Title</label><input id="content-title" placeholder="Tiêu đề bài viết"></div>
+    <div class="form-group"><label>Body</label><textarea id="content-body" placeholder="Nội dung..."></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="content-status">
+        <option value="draft">draft</option>
+        <option value="published">published</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-content')">Huỷ</button>
+      <button class="btn btn-primary" onclick="addContent()">Tạo</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-install-plugin">
+  <div class="modal">
+    <h3>+ Cài Plugin</h3>
+    <div class="form-group"><label>Plugin Name</label><input id="plugin-name" placeholder="vd: seo-plugin"></div>
+    <div class="form-group"><label>Version</label><input id="plugin-version" placeholder="1.0.0" value="1.0.0"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-install-plugin')">Huỷ</button>
+      <button class="btn btn-primary" onclick="installPlugin()">Cài đặt</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-hook">
+  <div class="modal">
+    <h3>+ Đăng ký Hook</h3>
+    <div class="form-group"><label>Event Name</label>
+      <select id="hook-event">
+        <option value="before_save">before_save</option>
+        <option value="after_save">after_save</option>
+        <option value="after_publish">after_publish</option>
+        <option value="on_login">on_login</option>
+        <option value="after_register_content_type">after_register_content_type</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Plugin Name</label><input id="hook-plugin" placeholder="vd: seo-plugin"></div>
+    <div class="form-group"><label>Callback Info</label><input id="hook-callback" placeholder="Mô tả callback"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-hook')">Huỷ</button>
+      <button class="btn btn-primary" onclick="addHook()">Đăng ký</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+let arch = 'layer';
+const BASE = () => arch === 'layer' ? 'http://localhost:3000/api' : 'http://localhost:4000/api';
+
+const mockData = {
+  contentTypes: [],
+  contents: [],
+  plugins: [],
+  hooks: [],
+};
+
+function setArch(a) {
+  arch = a;
+  document.querySelectorAll('.arch-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(a === 'layer' ? 'lay' : 'mic')));
+  document.getElementById('arch-label').textContent = a === 'layer' ? 'Layer Architecture' : 'Microkernel Architecture';
+  document.getElementById('port-badge').textContent = a === 'layer' ? ':3000' : ':4000';
+  const box = document.getElementById('arch-info-box');
+  box.className = 'arch-info' + (a === 'microkernel' ? ' microkernel' : '');
+  box.innerHTML = a === 'layer'
+    ? '<strong>LAYER ARCHITECTURE</strong> — Request đi tuần tự qua từng tầng: Presentation → Business Logic → Data Access → Database. Response trả ngược lên.'
+    : '<strong>MICROKERNEL ARCHITECTURE</strong> — Plugin kết nối thẳng vào Core. Mỗi plugin độc lập. Core chỉ biết interface chuẩn: name, activate(), deactivate().';
+
+  const flowLabel = document.querySelector('#hook-flow-box div');
+  if (flowLabel) flowLabel.textContent = `Hook Flow — ${a === 'layer' ? 'Layer' : 'Microkernel'}`;
+
+  toast(`Đã chuyển sang ${a === 'layer' ? 'Layer' : 'Microkernel'} (port ${a === 'layer' ? '3000' : '4000'})`, false);
+  refreshAll();
+}
+
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(name)) n.classList.add('active');
+  });
+  const titles = { dashboard: 'Dashboard', 'content-types': 'Content Types', contents: 'Contents', plugins: 'Plugins', hooks: 'Hook System' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  document.getElementById('page-breadcrumb').textContent = titles[name] || name;
+  if (name !== 'dashboard') loadPanel(name);
+}
+
+async function apiFetch(path, method = 'GET', body = null) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(BASE() + path, opts);
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+async function loadPanel(name) {
+  if (name === 'content-types') await loadTypes();
+  if (name === 'contents') await loadContents();
+  if (name === 'plugins') await loadPlugins();
+  if (name === 'hooks') await loadHooks();
+}
+
+async function refreshAll() {
+  await loadDashboard();
+}
+
+async function loadDashboard() {
+  document.getElementById('stat-types').textContent = mockData.contentTypes.length;
+  document.getElementById('stat-plugins').textContent = mockData.plugins.filter(p => p.status === 'active').length;
+  document.getElementById('stat-hooks').textContent = mockData.hooks.length;
+
+  const tbody = document.getElementById('recent-contents-body');
+  const items = mockData.contents.slice(0, 5);
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Chưa có content nào</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(c => `
+    <tr>
+      <td>${c.title}</td>
+      <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent2)">${c.typeName || c.type_name}</span></td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(c.created_at)}</td>
+    </tr>`).join('');
+}
+
+async function loadTypes() {
+  const res = await apiFetch('/content-types');
+  if (res && res.data) mockData.contentTypes = res.data;
+  renderTypes();
+}
+
+function renderTypes() {
+  const tbody = document.getElementById('types-body');
+  if (!mockData.contentTypes.length) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty"><div class="icon">◻</div><div>Chưa có content type</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = mockData.contentTypes.map(t => `
+    <tr>
+      <td style="font-family:var(--mono);color:var(--accent)">${t.name}</td>
+      <td style="color:var(--muted)">${t.description || '—'}</td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(t.created_at)}</td>
+    </tr>`).join('');
+}
+
+async function loadContents() {
+  const res = await apiFetch('/contents');
+  if (res && res.data) mockData.contents = res.data;
+  renderContents();
+}
+
+function renderContents() {
+  const tbody = document.getElementById('contents-body');
+  if (!mockData.contents.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">◤</div><div>Chưa có content</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = mockData.contents.map(c => `
+    <tr>
+      <td>${c.title}</td>
+      <td><span style="font-family:var(--mono);font-size:12px;color:var(--accent2)">${c.typeName || c.type_name}</span></td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td style="color:var(--muted);font-size:12px">${formatDate(c.created_at)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteContent(${c.id})">Xoá</button></td>
+    </tr>`).join('');
+}
+
+async function loadPlugins() {
+  const res = await apiFetch('/plugins');
+  if (res && res.data) mockData.plugins = res.data;
+  renderPlugins();
+}
+
+function renderPlugins() {
+  const tbody = document.getElementById('plugins-body');
+  if (!mockData.plugins.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="icon">◎</div><div>Chưa có plugin</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = mockData.plugins.map(p => `
+    <tr>
+      <td style="font-family:var(--mono)">${p.name}</td>
+      <td style="color:var(--muted);font-family:var(--mono);font-size:12px">v${p.version}</td>
+      <td><span class="badge badge-${p.status}">${p.status}</span></td>
+      <td style="display:flex;gap:6px;align-items:center">
+        ${p.status === 'installed' || p.status === 'inactive'
+          ? `<button class="btn btn-ghost btn-sm" onclick="activatePlugin('${p.name}')">Activate</button>`
+          : `<button class="btn btn-ghost btn-sm" onclick="deactivatePlugin('${p.name}')">Deactivate</button>`}
+        ${p.status !== 'active'
+          ? `<button class="btn btn-danger btn-sm" onclick="uninstallPlugin('${p.name}')">Gỡ</button>`
+          : ''}
+      </td>
+    </tr>`).join('');
+}
+
+async function loadHooks() {
+  const res = await apiFetch('/hooks');
+  if (res && res.data) mockData.hooks = res.data;
+  renderHooks();
+  loadDashboard();
+}
+
+function renderHooks() {
+  const tbody = document.getElementById('hooks-body');
+  if (!mockData.hooks.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="icon">↺</div><div>Chưa có hook nào</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = mockData.hooks.map(h => `
+    <tr>
+      <td><span style="font-family:var(--mono);color:var(--accent3)">${h.event_name || h.eventName}</span></td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--accent2)">${h.plugin_name || h.pluginName}</td>
+      <td style="color:var(--muted);font-size:12px">${h.callback_info || h.callbackInfo || '—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeHook('${h.event_name||h.eventName}','${h.plugin_name||h.pluginName}')">Xoá</button></td>
+    </tr>`).join('');
+}
+
+async function addContentType() {
+  const name = document.getElementById('type-name').value.trim();
+  const description = document.getElementById('type-desc').value.trim();
+  if (!name) { toast('Nhập tên content type!', true); return; }
+
+  const res = await apiFetch('/content-types', 'POST', { name, description });
+  if (res && res.success) {
+    mockData.contentTypes.push(res.data);
+  } else {
+    mockData.contentTypes.push({ name, description, created_at: new Date().toISOString() });
+  }
+  closeModal('modal-add-type');
+  document.getElementById('type-name').value = '';
+  document.getElementById('type-desc').value = '';
+  renderTypes();
+  loadDashboard();
+  toast(`Content type "${name}" đã đăng ký`);
+}
+
+async function addContent() {
+  const typeName = document.getElementById('content-type').value.trim();
+  const title = document.getElementById('content-title').value.trim();
+  const body = document.getElementById('content-body').value.trim();
+  const status = document.getElementById('content-status').value;
+  if (!typeName || !title) { toast('Điền đủ typeName và title!', true); return; }
+
+  const res = await apiFetch('/contents', 'POST', { typeName, title, body, status });
+  if (res && res.success) {
+    mockData.contents.unshift(res.data);
+  } else {
+    mockData.contents.unshift({ id: Date.now(), typeName, title, body, status, created_at: new Date().toISOString() });
+  }
+  closeModal('modal-add-content');
+  ['content-type','content-title','content-body'].forEach(id => document.getElementById(id).value = '');
+  renderContents();
+  loadDashboard();
+  toast(`Content "${title}" đã tạo — hook before_save & after_save đã kích hoạt`);
+}
+
+async function deleteContent(id) {
+  const res = await apiFetch('/contents/' + id, 'DELETE');
+  mockData.contents = mockData.contents.filter(c => c.id !== id);
+  renderContents();
+  loadDashboard();
+  toast('Content đã xoá');
+}
+
+async function installPlugin() {
+  const name = document.getElementById('plugin-name').value.trim();
+  const version = document.getElementById('plugin-version').value.trim() || '1.0.0';
+  if (!name) { toast('Nhập tên plugin!', true); return; }
+
+  const res = await apiFetch('/plugins/install', 'POST', { name, version });
+  if (res && res.success) {
+    mockData.plugins.push(res.data);
+  } else {
+    mockData.plugins.push({ name, version, status: 'installed', created_at: new Date().toISOString() });
+  }
+  closeModal('modal-install-plugin');
+  document.getElementById('plugin-name').value = '';
+  renderPlugins();
+  loadDashboard();
+  toast(`Plugin "${name}" đã cài đặt`);
+}
+
+async function activatePlugin(name) {
+  const res = await apiFetch(`/plugins/${name}/activate`, 'POST');
+  const p = mockData.plugins.find(p => p.name === name);
+  if (p) p.status = 'active';
+  if (res && res.success) mockData.plugins = mockData.plugins.map(p => p.name === name ? res.data : p);
+  if (!mockData.hooks.find(h => (h.event_name||h.eventName) === 'after_save' && (h.plugin_name||h.pluginName) === name)) {
+    mockData.hooks.push({ event_name: 'after_save', plugin_name: name, callback_info: `auto-hook from ${name}` });
+  }
+  renderPlugins();
+  loadDashboard();
+  toast(`Plugin "${name}" đã kích hoạt — hook after_save đã đăng ký`);
+}
+
+async function deactivatePlugin(name) {
+  const res = await apiFetch(`/plugins/${name}/deactivate`, 'POST');
+  const p = mockData.plugins.find(p => p.name === name);
+  if (p) p.status = 'inactive';
+  renderPlugins();
+  loadDashboard();
+  toast(`Plugin "${name}" đã tắt`);
+}
+
+async function uninstallPlugin(name) {
+  const res = await apiFetch(`/plugins/${name}`, 'DELETE');
+  mockData.plugins = mockData.plugins.filter(p => p.name !== name);
+  mockData.hooks = mockData.hooks.filter(h => (h.plugin_name||h.pluginName) !== name);
+  renderPlugins();
+  loadDashboard();
+  toast(`Plugin "${name}" đã gỡ`);
+}
+
+async function addHook() {
+  const eventName = document.getElementById('hook-event').value;
+  const pluginName = document.getElementById('hook-plugin').value.trim();
+  const callbackInfo = document.getElementById('hook-callback').value.trim();
+  if (!pluginName) { toast('Nhập plugin name!', true); return; }
+
+  const res = await apiFetch('/hooks/register', 'POST', { eventName, pluginName, callbackInfo });
+  if (res && res.success) {
+    mockData.hooks.push(res.data);
+  } else {
+    mockData.hooks.push({ event_name: eventName, plugin_name: pluginName, callback_info: callbackInfo });
+  }
+  closeModal('modal-add-hook');
+  document.getElementById('hook-plugin').value = '';
+  document.getElementById('hook-callback').value = '';
+  renderHooks();
+  loadDashboard();
+  toast(`Hook "${eventName}" → "${pluginName}" đã đăng ký`);
+}
+
+async function removeHook(eventName, pluginName) {
+  await apiFetch('/hooks', 'DELETE', { eventName, pluginName });
+  mockData.hooks = mockData.hooks.filter(h =>
+    !((h.event_name||h.eventName) === eventName && (h.plugin_name||h.pluginName) === pluginName)
+  );
+  renderHooks();
+  loadDashboard();
+  toast(`Hook đã xoá`);
+}
+
+function animateHookFlow() {
+  const steps = ['hstep-request','hstep-before','hstep-plugin','hstep-save','hstep-after','hstep-response'];
+  steps.forEach(id => document.getElementById(id).classList.remove('fired'));
+  steps.forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('fired'), i * 400);
+  });
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+function toast(msg, isError = false) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

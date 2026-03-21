@@ -1,0 +1,22 @@
+flowchart TD
+    Client[Client / Dashboard] --> Router[Presentation Layer]
+    Router --> Business[Business Layer]
+    Business --> DataAccess[Data Access Layer]
+    DataAccess --> DB[(MariaDB Database)]
+
+    Router --> ContentAPI[Content Endpoints]
+    Router --> PluginAPI[Plugin Endpoints]
+    Router --> HookAPI[Hook Endpoints]
+
+    Business --> Validation[Validation]
+    Business --> HookRuntime[Runtime Hook Registry]
+    Business --> ContentLogic[Content Management]
+    Business --> LifecycleLogic[Plugin Lifecycle]
+
+    HookRuntime --> BeforeSave[before_save]
+    HookRuntime --> AfterSave[after_save]
+    HookRuntime --> AfterPublish[after_publish]
+
+    DataAccess --> ContentTable[(content_types / contents)]
+    DataAccess --> PluginTable[(plugins)]
+    DataAccess --> HookTable[(hooks)]
