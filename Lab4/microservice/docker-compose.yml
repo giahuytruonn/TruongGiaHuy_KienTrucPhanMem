@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+
+  # ==================== DATABASES ====================
+
+  mysql-login:
+    image: mysql:8.0
+    container_name: mysql-login
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: logindb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_login_data:/var/lib/mysql
+    networks:
+      - microservice-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-register:
+    image: mysql:8.0
+    container_name: mysql-register
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: registerdb
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_register_data:/var/lib/mysql
+    networks:
+      - microservice-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== SERVICES ====================
+
+  login-service:
+    build: ./login-service
+    container_name: login-service
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-login:3306/logindb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      JWT_SECRET: mySecretKeyForJWTTokenMustBe32Chars
+    depends_on:
+      mysql-login:
+        condition: service_healthy
+    networks:
+      - microservice-network
+
+  register-service:
+    build: ./register-service
+    container_name: register-service
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    environment:
+      LOGIN_SERVICE_URL: http://login-service:8082
+    depends_on:
+      - login-service
+    networks:
+      - microservice-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: mySecretKeyForJWTTokenMustBe32Chars
+    depends_on:
+      - login-service
+      - register-service
+    networks:
+      - microservice-network
+
+# ==================== VOLUMES & NETWORKS ====================
+
+volumes:
+  mysql_login_data:
+  mysql_register_data:
+
+networks:
+  microservice-network:
+    driver: bridge

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fe5fc4c0-8b3f-4d67-9cd9-537ddd42d80a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/apigateway/filter/JwtAuthFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/config/GlobalExceptionHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/controller/LoginController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/dto/request/CreateUserRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/dto/request/LoginRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/dto/response/ApiResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/dto/response/AuthResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/entity/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/repository/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/security/JwtAuthenticationFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/security/JwtService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/service/LoginService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/login-service/src/main/java/iuh/fit/loginservice/service/UserDetailsServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/client/LoginServiceClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/config/GlobalExceptionHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/controller/RegisterController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/dto/request/CreateUserRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/dto/request/RegisterRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/dto/response/ApiResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/dto/response/AuthResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/register-service/src/main/java/iuh/fit/registerservice/service/RegisterService.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_D:/DaiHoc/KienTrucPhanMem/BaiTap/KienTrucPhanMem/22707281_NguyenXuanChuc_Lab04/microservice" value="3BJK64bo3JqHRxJi6Oeocyoa7iL" />
+    </persistenceIdMap>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="3BJK64bo3JqHRxJi6Oeocyoa7iL" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/DaiHoc/KienTrucPhanMem/BaiTap/KienTrucPhanMem/22707281_NguyenXuanChuc_Lab04/microservice",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fe5fc4c0-8b3f-4d67-9cd9-537ddd42d80a" name="Changes" comment="" />
+      <created>1774201558323</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774201558323</updated>
+      <workItem from="1774201561390" duration="28000" />
+      <workItem from="1774204325363" duration="1551000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>
