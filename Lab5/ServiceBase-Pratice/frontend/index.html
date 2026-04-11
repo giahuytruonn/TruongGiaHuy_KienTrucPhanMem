@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service-Based Architecture Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
+
+    header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white; padding: 20px 40px;
+    }
+    header h1 { font-size: 1.6rem; }
+    header p  { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
+
+    .arch-diagram {
+      background: white; margin: 20px 40px; padding: 20px;
+      border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      text-align: center; font-size: 0.95rem;
+    }
+    .arch-diagram .flow {
+      display: flex; justify-content: center; align-items: center;
+      gap: 8px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .svc { background: #e3f2fd; border: 2px solid #1a73e8; border-radius: 8px;
+           padding: 8px 16px; font-weight: 600; }
+    .mq  { background: #fff3e0; border: 2px solid #fb8c00; border-radius: 8px;
+           padding: 8px 16px; font-weight: 600; }
+    .arrow { font-size: 1.4rem; color: #888; }
+    .db  { background: #e8f5e9; border: 2px solid #43a047; border-radius: 8px;
+           padding: 8px 16px; font-weight: 600; }
+
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+                 padding: 0 40px 40px; }
+
+    .card { background: white; border-radius: 10px; padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .card h2 { font-size: 1.1rem; margin-bottom: 14px; color: #1a73e8;
+               border-bottom: 2px solid #e3f2fd; padding-bottom: 8px; }
+
+    label  { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    input  { width: 100%; padding: 8px 12px; border: 1px solid #ccc;
+             border-radius: 6px; margin-bottom: 10px; font-size: 0.9rem; }
+
+    button {
+      background: #1a73e8; color: white; border: none;
+      padding: 10px 22px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+      transition: background .2s;
+    }
+    button:hover { background: #1558b0; }
+    button.refresh { background: #43a047; }
+    button.refresh:hover { background: #2e7d32; }
+
+    .result { margin-top: 14px; background: #f9f9f9; border-radius: 6px;
+              padding: 12px; max-height: 260px; overflow-y: auto;
+              font-size: 0.82rem; white-space: pre-wrap; border: 1px solid #eee; }
+
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px;
+             font-size: 0.75rem; font-weight: 700; }
+    .badge-pending  { background: #fff3e0; color: #e65100; }
+    .badge-paid     { background: #e8f5e9; color: #1b5e20; }
+    .badge-shipped  { background: #e3f2fd; color: #0d47a1; }
+
+    .log-box { background: #1e1e1e; color: #d4d4d4; border-radius: 8px;
+               padding: 14px; font-family: monospace; font-size: 0.78rem;
+               max-height: 200px; overflow-y: auto; margin-top: 10px; }
+    .log-box .ok  { color: #6adb6a; }
+    .log-box .err { color: #f47067; }
+    .log-box .info{ color: #569cd6; }
+
+    @media(max-width: 760px) { .container { grid-template-columns: 1fr; padding: 0 16px 24px; }
+                                header, .arch-diagram { margin: 10px; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Service-Based Architecture Demo</h1>
+  <p>Order ➜ Payment ➜ Shipping &nbsp;|&nbsp; 3 Services · 1 Shared DB · RabbitMQ</p>
+</header>
+
+<!-- Architecture diagram -->
+<div class="arch-diagram">
+  <strong>Event-Driven Flow (Service-Based Architecture)</strong>
+  <div class="flow">
+    <div class="svc">Client / FE</div>
+    <div class="arrow">→ REST →</div>
+    <div class="svc">OrderService<br><small>:8081</small></div>
+    <div class="arrow">→ MQ →</div>
+    <div class="mq">RabbitMQ<br><small>order.created</small></div>
+    <div class="arrow">→ consume →</div>
+    <div class="svc">PaymentService<br><small>:8082</small></div>
+    <div class="arrow">→ MQ →</div>
+    <div class="mq">RabbitMQ<br><small>payment.completed</small></div>
+    <div class="arrow">→ consume →</div>
+    <div class="svc">ShippingService<br><small>:8083</small></div>
+    <br>
+    <div class="db">Shared DB: service_base_db (MariaDB)</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── Place Order ── -->
+  <div class="card">
+    <h2>📦 Place New Order</h2>
+    <label>Product Name</label>
+    <input id="productName" value="Pizza Margherita" />
+    <label>Quantity</label>
+    <input id="quantity" type="number" value="2" min="1" />
+    <label>Unit Price (VND)</label>
+    <input id="price" type="number" value="50000" min="0" />
+    <button onclick="placeOrder()">Place Order → Trigger Pipeline</button>
+    <div class="log-box" id="orderLog"><span class="info">Waiting for action...</span></div>
+  </div>
+
+  <!-- ── Orders List ── -->
+  <div class="card">
+    <h2>📋 All Orders (OrderService :8081)</h2>
+    <button class="refresh" onclick="loadOrders()">Refresh Orders</button>
+    <div class="result" id="ordersResult">Click Refresh to load…</div>
+  </div>
+
+  <!-- ── Payments List ── -->
+  <div class="card">
+    <h2>💳 All Payments (PaymentService :8082)</h2>
+    <button class="refresh" onclick="loadPayments()">Refresh Payments</button>
+    <div class="result" id="paymentsResult">Click Refresh to load…</div>
+  </div>
+
+  <!-- ── Shipments List ── -->
+  <div class="card">
+    <h2>🚚 All Shipments (ShippingService :8083)</h2>
+    <button class="refresh" onclick="loadShipments()">Refresh Shipments</button>
+    <div class="result" id="shipmentsResult">Click Refresh to load…</div>
+  </div>
+
+</div>
+
+<script>
+  const ORDER_URL   = 'http://localhost:8081/orders';
+  const PAYMENT_URL = 'http://localhost:8082/payments';
+  const SHIP_URL    = 'http://localhost:8083/shipments';
+
+  function log(boxId, msg, type = 'info') {
+    const box = document.getElementById(boxId);
+    const span = document.createElement('span');
+    span.className = type;
+    span.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg + '\n';
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function placeOrder() {
+    const logBox = 'orderLog';
+    document.getElementById(logBox).innerHTML = '';
+    const body = {
+      productName: document.getElementById('productName').value,
+      quantity:    parseInt(document.getElementById('quantity').value),
+      price:       parseFloat(document.getElementById('price').value)
+    };
+    log(logBox, 'POST ' + ORDER_URL + ' → ' + JSON.stringify(body));
+    try {
+      const res  = await fetch(ORDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      log(logBox, 'Order created: id=' + data.id + ', status=' + data.status, 'ok');
+      log(logBox, 'OrderService published "order.created" to RabbitMQ', 'info');
+      log(logBox, 'PaymentService will consume → process → publish "payment.completed"', 'info');
+      log(logBox, 'ShippingService will consume → create shipment', 'info');
+      log(logBox, 'Wait 1-2s then refresh all tabs below!', 'ok');
+    } catch (e) {
+      log(logBox, 'ERROR: ' + e.message, 'err');
+    }
+  }
+
+  function statusBadge(status) {
+    const cls = { PENDING: 'badge-pending', PAID: 'badge-paid', SHIPPED: 'badge-shipped' }[status] || '';
+    return `<span class="badge ${cls}">${status}</span>`;
+  }
+
+  async function loadOrders() {
+    const el = document.getElementById('ordersResult');
+    try {
+      const res  = await fetch(ORDER_URL);
+      const data = await res.json();
+      if (!data.length) { el.textContent = 'No orders yet.'; return; }
+      el.innerHTML = data.map(o =>
+        `<b>#${o.id}</b> ${o.productName} ×${o.quantity} — ¥${o.price.toLocaleString()} ${statusBadge(o.status)}`
+      ).join('\n');
+    } catch (e) { el.textContent = 'Error: ' + e.message; }
+  }
+
+  async function loadPayments() {
+    const el = document.getElementById('paymentsResult');
+    try {
+      const res  = await fetch(PAYMENT_URL);
+      const data = await res.json();
+      if (!data.length) { el.textContent = 'No payments yet.'; return; }
+      el.innerHTML = data.map(p =>
+        `<b>#${p.id}</b> orderId=${p.orderId} amount=¥${p.amount.toLocaleString()} ${statusBadge(p.status)}`
+      ).join('\n');
+    } catch (e) { el.textContent = 'Error: ' + e.message; }
+  }
+
+  async function loadShipments() {
+    const el = document.getElementById('shipmentsResult');
+    try {
+      const res  = await fetch(SHIP_URL);
+      const data = await res.json();
+      if (!data.length) { el.textContent = 'No shipments yet.'; return; }
+      el.innerHTML = data.map(s =>
+        `<b>#${s.id}</b> orderId=${s.orderId} tracking=${s.trackingNumber} ${statusBadge(s.status)}`
+      ).join('\n');
+    } catch (e) { el.textContent = 'Error: ' + e.message; }
+  }
+
+  // Auto-load on page open
+  loadOrders(); loadPayments(); loadShipments();
+</script>
+</body>
+</html>
